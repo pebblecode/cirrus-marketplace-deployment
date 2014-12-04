@@ -5,9 +5,13 @@ __pycache__/
 # C extensions
 *.so
 
+# intellij
+.idea/
+
 # Distribution / packaging
 .Python
 env/
+venv/
 build/
 develop-eggs/
 dist/
