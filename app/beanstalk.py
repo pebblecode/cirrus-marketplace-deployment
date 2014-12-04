@@ -16,15 +16,31 @@ class Beanstalk():
             print "Application %s already exists %s" % (name, e)
 
     def create_application_version(self, name=None, auto_create=False):
-        self.connection.create_application_version(name, "version-1", "description", "digitalmarketplace-api-deployments", "digitalmarketplace-api.zip", auto_create)
+        self.connection.create_application_version(
+            name,
+            "version-2",
+            "description",
+            "dm-test-deploy",
+            "digitalmarketplace-api.zip",
+            auto_create)
 
     # def create_configuration_template(self, name=None, template_name=None):
     #     print "create_template"
     #     self.connection.create_configuration_template(name, template_name, self.stack, name, )
 
     def create_environment(self, name=None, environment_name=None):
-         self.connection.create_environment(application_name=name, environment_name=environment_name, version_label="version-1", solution_stack_name=self.stack)
+        self.connection.create_environment(
+            application_name=name,
+            environment_name=environment_name,
+            version_label="version-2",
+            solution_stack_name=self.stack)
 
+    def update_environment(self, environment_name=None, version_label=None):
+        """This is essentially 'deploy'"""
+        self.connection.update_environment(
+            environment_name=environment_name,
+            version_label=version_label)
+                               
     def delete_application(self, name=None, terminate_env_by_force=True):
         self.connection.delete_application(name, terminate_env_by_force)
 
