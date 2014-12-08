@@ -9,6 +9,10 @@ from boto.exception import S3CreateError
 from . import git
 
 
+def get_client(region):
+    return Client(region)
+
+
 class Client(object):
     """High level interface into deploying in beanstalk"""
 

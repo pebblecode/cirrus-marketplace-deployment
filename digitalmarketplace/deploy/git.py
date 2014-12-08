@@ -24,6 +24,18 @@ def get_current_sha():
         ['git', 'rev-parse', 'HEAD']).strip()
 
 
+def get_current_ref():
+    return subprocess.check_output(
+        ['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+
+
+def get_current_branch():
+    branch = get_current_ref()
+    if branch in ['HEAD', 'master']:
+        raise StandardError('Not on a feature branch; on {}'.format(branch))
+    return branch
+
+
 def create_package():
     sha = get_current_sha()
     file_path = '/tmp/{}.zip'.format(sha)
