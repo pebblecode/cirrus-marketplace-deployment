@@ -1,10 +1,11 @@
 # AWS client for deployment
 import os.path
 import hashlib
+import re
 
 from boto import beanstalk, s3
 from boto.s3.key import Key
-from boto.exception import S3CreateError
+from boto.exception import S3CreateError, BotoServerError
 
 from . import git
 
@@ -14,13 +15,12 @@ def get_client(region):
 
 
 class Client(object):
-    """High level interface into deploying in beanstalk"""
+    """High level interface for deploying in Beanstalk"""
 
     def __init__(self, region):
         self.s3 = S3Client(region)
         self.beanstalk = BeanstalkClient(region)
         self.application_name = git.get_application_name()
-        print("Application name: {}".format(self.application_name))
 
     def bootstrap(self):
         """Bootstrap a new application"""
@@ -38,7 +38,7 @@ class Client(object):
         s3_bucket, s3_key = self.s3.upload_package(
             self.application_name, package_path)
         if with_sha:
-            version_label = '{}-{}'.format(version_label, sha)
+            version_label = '{}-{}'.format(version_label, sha[:7])
         self.beanstalk.create_application_version(
             self.application_name, version_label,
             s3_bucket, s3_key,
@@ -90,10 +90,6 @@ class S3Client(object):
         return application_name, key.key
 
 
-class SomeException(Exception):
-    pass
-
-
 DEFAULT_SOLUTION_STACK = '64bit Amazon Linux 2014.03 v1.0.9 running Python 2.7'
 
 
@@ -113,8 +109,13 @@ class BeanstalkClient(object):
         return beanstalk.connect_to_region(region)
 
     def create_application(self, application_name):
-        # Will fail if application exists
-        self._connection.create_application(application_name)
+        try:
+            self._connection.create_application(application_name)
+        except BotoServerError as e:
+            if self._application_already_exists(e):
+                raise ApplicationAlreadyExists(e.message)
+            else:
+                raise
 
     def create_environment(self, application_name, environment_name,
                            version_label):
@@ -138,31 +139,92 @@ class BeanstalkClient(object):
 
     def update_environment(self, application_name, environment_name,
                            version_label):
-        environment_name = self._environment_name(
-            application_name, environment_name)
-        self._connection.update_environment(
-            environment_name=environment_name,
-            version_label=version_label)
+        try:
+            environment_name = self._environment_name(
+                application_name, environment_name)
+            self._connection.update_environment(
+                environment_name=environment_name,
+                version_label=version_label)
+        except BotoServerError as e:
+            if self._environment_not_ready(e):
+                raise EnvironmentNotReady(e.message)
+            else:
+                raise
 
     def create_or_update_environment(self, application_name, environment_name,
                                      version_label):
         try:
             self.create_environment(
                 application_name, environment_name, version_label)
-        except SomeException:
-            self.update_environment(
-                application_name, environment_name, version_label)
+        except BotoServerError as e:
+            if self._environment_already_exists(e):
+                self.update_environment(
+                    application_name, environment_name, version_label)
+            else:
+                raise
 
     def terminate_environment(self, application_name, environment_name):
-        environment_name = self._environment_name(
-            application_name, environment_name)
-        self._connection.terminate_environment(
-            environment_name=environment_name)
+        try:
+            environment_name = self._environment_name(
+                application_name, environment_name)
+            self._connection.terminate_environment(
+                environment_name=environment_name)
+        except BotoServerError as e:
+            if self._cannot_terminate_environment(e):
+                raise CannotTerminateEnvironment(e.message)
+            else:
+                raise
 
     def create_application_version(self, application_name, version_label,
                                    s3_bucket, s3_key, description):
-        self._connection.create_application_version(
-            application_name, version_label,
-            s3_bucket=s3_bucket, s3_key=s3_key,
-            description=description)
+        try:
+            self._connection.create_application_version(
+                application_name, version_label,
+                s3_bucket=s3_bucket, s3_key=s3_key,
+                description=description)
+        except BotoServerError as e:
+            if not self._application_version_already_exists(e):
+                raise
 
+    def _application_already_exists(self, e):
+        if e.error_code != 'InvalidParameterValue':
+            return False
+        return re.match(r'Application .* already exists.', e.message)
+
+    def _cannot_terminate_environment(self, e):
+        if e.error_code != 'InvalidParameterValue':
+            return False
+        return re.match(r'Cannot terminate environment named', e.message)
+
+    def _environment_not_ready(self, e):
+        if e.error_code != 'InvalidParameterValue':
+            return False
+        pattern = r'Environment named .* is in an invalid state for this ' + \
+            'operation. Must be Ready.'
+        return re.match(pattern, e.message)
+
+    def _environment_already_exists(self, e):
+        if e.error_code != 'InvalidParameterValue':
+            return False
+        return re.match(r'Environment .* already exists.', e.message)
+
+    def _application_version_already_exists(self, e):
+        if e.error_code != 'InvalidParameterValue':
+            return False
+        return re.match(r'Application Version .* already exists.', e.message)
+
+
+class AWSError(StandardError):
+    pass
+
+
+class ApplicationAlreadyExists(AWSError):
+    pass
+
+
+class CannotTerminateEnvironment(AWSError):
+    pass
+
+
+class EnvironmentNotReady(AWSError):
+    pass

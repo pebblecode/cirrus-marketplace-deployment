@@ -1,4 +1,7 @@
 # Command line interface to deployment
+from __future__ import print_function
+import sys
+
 import argh
 
 from digitalmarketplace.deploy import aws, git
@@ -48,4 +51,8 @@ def main():
         terminate_branch_environment,
         deploy_to_staging,
         deploy_to_production])
-    parser.dispatch()
+    try:
+        parser.dispatch()
+    except aws.AWSError as e:
+        print(e.message, file=sys.stderr)
+        sys.exit(1)
