@@ -21,11 +21,16 @@ Navigate into the project you want to deploy::
 
 If this project has not been set up in Beanstalk yet you will have to ``bootstrap`` it.
 This will create an S3 bucket for storing the application packages and create a
-Beanstalk application with two environments (one for staging, one for production)
-set to an initial version. You do not need to provide an application name as that
+Beanstalk application with a two environments (one for staging, one for production)
+set to an initial version. A configuration template called ``default`` will also
+be created and used for both of the environments. Environment variables can be
+added to this configuration template from the current environment with the
+``--proxy-env`` argument. In the exmaple below the ``FOO`` and ``BAR``
+environment variables will be taken from the current environment and added to
+the configuration template. You do not need to provide an application name as that
 is taken from the git URL::
 
-  dm-deploy bootstrap
+  dm-deploy bootstrap --proxy-env='FOO,BAR'
 
 To create an ephemeral environment for a feature branch use the 
 ``deploy-to-branch-environment`` command. This will create a development version
@@ -63,8 +68,10 @@ in the same `AWS region`_ as the Beanstalk application. Packages are zip files
 at a point in the git tree. As such they are named after the full commit sha
 that they represent.
 
-When a new application is bootstrapped two `Beanstalk environments`_ are created. These are
-named ``{app sha}-staging`` and ``{app sha}-production``. The ``{app sha}`` is a
+When a new application is bootstrapped a configuration template called
+``default`` is created and local environment variables can optionally be added
+to it. Then two `Beanstalk environments`_ are created. These are named
+``{app sha}-staging`` and ``{app sha}-production``. The ``{app sha}`` is a
 short unique identifier for the application. This is needed because Beanstalk
 environment names must be unique across all your applications. A new version
 called ``initial`` is created for these two new environments.

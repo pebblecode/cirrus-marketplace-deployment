@@ -10,6 +10,9 @@ from boto.exception import S3CreateError, BotoServerError
 from . import git
 
 
+DEFAULT_SOLUTION_STACK = '64bit Amazon Linux 2014.03 v1.0.9 running Python 2.7'
+
+
 def get_client(region):
     return Client(region)
 
@@ -22,10 +25,22 @@ class Client(object):
         self.beanstalk = BeanstalkClient(region)
         self.application_name = git.get_application_name()
 
-    def bootstrap(self):
+    def create_configuration(self, proxy_env):
+        option_name = 'aws:elasticbeanstalk:application:environment'
+        option_settings = [
+            (option_name, env_name, os.environ[env_name])
+            for env_name in proxy_env]
+
+        self.beanstalk.create_configuration_template(
+            self.application_name, 'default',
+            DEFAULT_SOLUTION_STACK, option_settings)
+
+    def bootstrap(self, proxy_env):
         """Bootstrap a new application"""
         self.s3.create_bucket(self.application_name)
         self.beanstalk.create_application(self.application_name)
+        self.create_configuration(proxy_env)
+
         version_label = self.create_version(
             'initial',
             description='Initial code version for bootstrap')
@@ -90,9 +105,6 @@ class S3Client(object):
         return application_name, key.key
 
 
-DEFAULT_SOLUTION_STACK = '64bit Amazon Linux 2014.03 v1.0.9 running Python 2.7'
-
-
 class BeanstalkClient(object):
 
     def __init__(self, region, **kwargs):
@@ -123,7 +135,13 @@ class BeanstalkClient(object):
             application_name, environment_name)
         self._connection.create_environment(
             application_name, environment_name, version_label,
-            solution_stack_name=self.solution_stack_name)
+            template_name='default')
+
+    def create_configuration_template(self, application_name, template_name,
+                                      solution_stack_name, option_settings):
+        self._connection.create_configuration_template(
+            application_name, template_name, solution_stack_name,
+            option_settings=option_settings)
 
     def _environment_name(self, application_name, environment_name):
         """Return an environment name
