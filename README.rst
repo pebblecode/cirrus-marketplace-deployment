@@ -7,9 +7,16 @@ A deployment tool for deploying Digital Marketplace applications to Beanstalk.
 Getting started
 ---------------
 
+Installation
+~~~~~~~~~~~~
+
 Install with pip::
 
   pip install git+https://github.com/alphagov/digitalmarketplace-deployment.git@rob-play
+
+``dm-deploy`` uses `boto`_ under the hood. AWS credentials can be provided to
+boto in few different ways, check their `config tutorial`_ for more information.
+At the minimum you will need an access key ID and a secret access key.
 
 View the ``dm-deploy`` help to verify the installation::
 
@@ -18,6 +25,9 @@ View the ``dm-deploy`` help to verify the installation::
 Navigate into the project you want to deploy::
 
   cd ../digitalmarketplace-api
+
+Bootstrapping
+~~~~~~~~~~~~~
 
 If this project has not been set up in Beanstalk yet you will have to ``bootstrap`` it.
 This will create an S3 bucket for storing the application packages and create a
@@ -32,6 +42,9 @@ is taken from the git URL::
 
   dm-deploy bootstrap --proxy-env='FOO,BAR'
 
+Ephemeral environments
+~~~~~~~~~~~~~~~~~~~~~~
+
 To create an ephemeral environment for a feature branch use the 
 ``deploy-to-branch-environment`` command. This will create a development version
 and a development environment with that version. If a branch is not explicitly
@@ -44,6 +57,9 @@ the ``terminate-branch-environment`` command. If a branch is not explicitly
 provided then the current branch name will be used::
 
   dm-deploy terminate-branch-environment
+
+Deployment
+~~~~~~~~~~
 
 When we want to deploy a new version of the application to staging or production
 we need to explicitly create a new version with the ``create-version`` command.
@@ -90,6 +106,8 @@ already exists) with the name ``{app sha}-dev-{label}`` where the ``{app sha}`` 
 the same as for the staging and production environments and the ``{label}`` is
 the same as for the version label.
 
+.. _boto: https://github.com/boto/boto
+.. _config tutorial: http://boto.readthedocs.org/en/latest/boto_config_tut.html
 .. _S3 bucket: http://docs.aws.amazon.com/general/latest/gr/glos-chap.html#bucket
 .. _Beanstalk application: http://docs.aws.amazon.com/general/latest/gr/glos-chap.html#application
 .. _application version: http://docs.aws.amazon.com/general/latest/gr/glos-chap.html#appversion
