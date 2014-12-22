@@ -76,6 +76,33 @@ class Client(object):
         self.beanstalk.update_environment(
             self.application_name, environment_name, version_label)
 
+    def deploy_latest_to_staging(self):
+        version_label = self.get_latest_release_version()
+        self.deploy(version_label, 'staging')
+
+    def get_latest_release_version(self):
+        versions = self.beanstalk.list_application_versions(
+            self.application_name)
+
+        versions = filter(lambda v: v['VersionLabel'].startswith('release-'),
+                          versions)
+        versions = sorted(versions,
+                          key=lambda v: v['DateCreated'],
+                          reverse=True)
+        if len(versions) == 0:
+            raise AWSError('No release versions available')
+
+        return versions[0]['VersionLabel']
+
+    def deploy_staging_to_production(self):
+        version_label = self.get_current_staging_version()
+        self.deploy(version_label, 'production')
+
+    def get_current_staging_version(self):
+        staging = self.beanstalk.describe_environment(
+            self.application_name, 'staging')
+        return staging['VersionLabel']
+
 
 class S3Client(object):
     def __init__(self, region, **kwargs):
@@ -156,6 +183,22 @@ class BeanstalkClient(object):
             hashlib.sha1(application_name).hexdigest()[:5],
             environment_name)
 
+    def describe_environment(self, application_name, environment_name):
+        environment_name = self._environment_name(
+            application_name, environment_name)
+
+        for environment in self.list_environments(application_name):
+            if environment['EnvironmentName'] == environment_name:
+                return environment
+
+    def list_environments(self, application_name):
+        response = self._connection.describe_environments(application_name)
+        response = response['DescribeEnvironmentsResponse']
+        result = response['DescribeEnvironmentsResult']
+        environments = result['Environments']
+
+        return environments
+
     def update_environment(self, application_name, environment_name,
                            version_label):
         try:
@@ -195,6 +238,15 @@ class BeanstalkClient(object):
                 raise CannotTerminateEnvironment(e.message)
             else:
                 raise
+
+    def list_application_versions(self, application_name):
+        response = self._connection.describe_application_versions(
+            application_name)
+        response = response['DescribeApplicationVersionsResponse']
+        result = response['DescribeApplicationVersionsResult']
+        versions = result['ApplicationVersions']
+
+        return versions
 
     def create_application_version(self, application_name, version_label,
                                    s3_bucket, s3_key, description):

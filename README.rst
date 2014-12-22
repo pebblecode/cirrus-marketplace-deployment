@@ -65,11 +65,18 @@ When we want to deploy a new version of the application to staging or production
 we need to explicitly create a new version with the ``create-version`` command.
 The new version will be created from the current ``HEAD``::
 
-  dm-deploy create-version 1234
+  dm-deploy create-version release-1234
 
-Once we have a version label we can deploy it to staging or production::
+Once we have a version label of the form `release-{ something }` we can deploy
+it to staging and production. The following command will deploy the most recent
+'release' version to the staging environment::
 
-  dm-deploy deploy-to-staging 1234
+  dm-deploy deploy-latest-to-staging
+
+Then we can deploy the version that is currently deployed to staging up to
+production::
+
+  dm-deploy deploy-staging-to-production
 
 
 AWS Elements
