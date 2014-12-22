@@ -1,6 +1,7 @@
 # Command line interface to deployment
 from __future__ import print_function
 import sys
+import logging
 
 import argh
 
@@ -57,6 +58,8 @@ def deploy_to_production(version_label, region=None):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
+
     parser = argh.ArghParser()
     parser.add_argument('--region', default='eu-west-1')
     parser.add_commands([
