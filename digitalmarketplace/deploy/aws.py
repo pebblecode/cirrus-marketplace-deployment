@@ -1,6 +1,7 @@
 # AWS client for deployment
 import os.path
 import hashlib
+import logging
 import re
 
 from boto import beanstalk, s3
@@ -160,6 +161,8 @@ class BeanstalkClient(object):
         try:
             environment_name = self._environment_name(
                 application_name, environment_name)
+            logging.info("Updaing {} to version {}".format(
+                         environment_name, version_label))
             self._connection.update_environment(
                 environment_name=environment_name,
                 version_label=version_label)
