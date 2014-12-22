@@ -47,13 +47,23 @@ def terminate_branch_environment(branch=None, region=None):
     aws.get_client(region).terminate_branch_environment(branch)
 
 
+def deploy_latest_to_staging(region=None):
+    """Deploy latest release version to the staging environment"""
+    aws.get_client(region).deploy_latest_to_staging()
+
+
+def deploy_staging_to_production(region=None):
+    """Deploy the version currently in staging to production"""
+    aws.get_client(region).deploy_staging_to_production()
+
+
 def deploy_to_staging(version_label, region=None):
-    """Deploy a previously created version to the staging environment"""
+    """DANGER: Deploy a version to the staging environment"""
     aws.get_client(region).deploy(version_label, 'staging')
 
 
 def deploy_to_production(version_label, region=None):
-    """Deploy a previously created version to the production environment"""
+    """DANGER: Deploy a version to the production environment"""
     aws.get_client(region).deploy(version_label, 'production')
 
 
@@ -68,6 +78,8 @@ def main():
         create_version,
         deploy_to_branch_environment,
         terminate_branch_environment,
+        deploy_latest_to_staging,
+        deploy_staging_to_production,
         deploy_to_staging,
         deploy_to_production])
     try:
