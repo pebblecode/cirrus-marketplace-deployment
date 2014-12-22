@@ -9,7 +9,7 @@ Getting started
 
 Install with pip::
 
-  pip install git+https:/github.com/alphagov/digitalmarketplace-deployment
+  pip install git+https://github.com/alphagov/digitalmarketplace-deployment.git@rob-play
 
 View the ``dm-deploy`` help to verify the installation::
 
