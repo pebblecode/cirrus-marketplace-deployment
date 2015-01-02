@@ -4,6 +4,7 @@ import hashlib
 import logging
 import re
 import time
+from collections import namedtuple
 
 from boto import beanstalk, ec2, s3, rds2
 from boto.s3.key import Key
@@ -91,9 +92,9 @@ class Client(object):
 
     def _create_environment(self, environment_name, db_name, db_username,
                             db_password, version_label):
-        db_uri = self._create_rds_instance(environment_name, db_name,
-                                           db_username, db_password)
-        self._create_beanstalk_environment(environment_name, db_uri,
+        db_info = self._create_rds_instance(environment_name, db_name,
+                                            db_username, db_password)
+        self._create_beanstalk_environment(environment_name, db_info,
                                            version_label)
 
     def _create_rds_instance(self, environment_name, db_name, db_username,
@@ -103,16 +104,15 @@ class Client(object):
                                                 db_username, db_password)
         logging.info("Waiting for RDS instance to start")
         dbinstance = self.rds.wait_for_endpoint(dbinstance)
-        endpoint_address = dbinstance['Endpoint']['Address']
-        endpoint_port = dbinstance['Endpoint']['Port']
-        db_uri = 'postgres://{}:{}@{}:{}/{}'.format(db_username, db_password,
-                                                    endpoint_address,
-                                                    endpoint_port,
-                                                    db_name)
 
-        return db_uri
+        return RDSInformation(
+            host=dbinstance['Endpoint']['Address'],
+            port=dbinstance['Endpoint']['Port'],
+            db_name=db_name,
+            username=db_username,
+            password=db_password)
 
-    def _create_beanstalk_environment(self, environment_name, db_uri,
+    def _create_beanstalk_environment(self, environment_name, db_info,
                                       version_label):
         logging.info("Creating Beanstalk environment for {}".format(
             environment_name))
@@ -120,7 +120,12 @@ class Client(object):
             self.application_name, environment_name,
             source_configuration='default',
             environ={
-                'SQLALCHEMY_DATABASE_URI': db_uri
+                'SQLALCHEMY_DATABASE_URI': db_info.sqlalchemy_uri(),
+                'RDS_DB_NAME': db_info.db_name,
+                'RDS_USERNAME': db_info.username,
+                'RDS_PASSWORD': db_info.password,
+                'RDS_HOSTNAME': db_info.host,
+                'RDS_PORT': db_info.port,
             })
         self.beanstalk.create_environment(
             self.application_name, environment_name, version_label,
@@ -133,8 +138,8 @@ class Client(object):
 
         rds_security_group.authorize(
             ip_protocol='tcp',
-            from_port=5432,
-            to_port=5432,
+            from_port=db_info.port,
+            to_port=db_info.port,
             src_group=eb_security_group)
 
     def deploy(self, version_label, environment_short_name):
@@ -179,6 +184,19 @@ class Client(object):
         """
         application_hash = hashlib.sha1(self.application_name).hexdigest()[:5]
         return '{}-{}'.format(application_hash, environment_short_name)
+
+
+_RDSInformation = namedtuple(
+    'RDSInformation',
+    ['db_name', 'username', 'password', 'host', 'port'])
+
+
+class RDSInformation(_RDSInformation):
+    def sqlalchemy_uri(self):
+        return 'postgres://{}:{}@{}:{}/{}'.format(
+            self.username, self.password,
+            self.host, self.port,
+            self.db_name)
 
 
 class S3Client(object):
