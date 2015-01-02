@@ -185,10 +185,7 @@ class S3Client(object):
     def __init__(self, region, **kwargs):
         self._region = region
         self._options = kwargs
-        self._connection = self._get_connection(region)
-
-    def _get_connection(self, region):
-        return s3.connect_to_region(region)
+        self._connection = s3.connect_to_region(region)
 
     def create_bucket(self, application_name):
         logging.info("Creating S3 bucket {} in region {}".format(
@@ -217,16 +214,13 @@ class BeanstalkClient(object):
     def __init__(self, region, **kwargs):
         self._region = region
         self._options = kwargs
-        self._connection = self._get_connection(region)
+        self._connection = beanstalk.connect_to_region(region)
         self._ec2 = EC2Client(region)
 
     @property
     def solution_stack_name(self):
         return self._options.get(
             'solution_stack_name', DEFAULT_SOLUTION_STACK)
-
-    def _get_connection(self, region):
-        return beanstalk.connect_to_region(region)
 
     def create_application(self, application_name):
         logging.info("Creating Beanstalk application {}".format(
