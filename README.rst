@@ -29,25 +29,25 @@ Navigate into the project you want to deploy::
 Bootstrapping
 ~~~~~~~~~~~~~
 
-If this project has not been set up in Beanstalk yet you will have to ``bootstrap`` it.
-It will create:
+If your project has not been set up in Beanstalk yet you will have to ``bootstrap`` it.
+This will create:
 
-- An S3 bucket for storing application packages
-- An Beanstalk application named after the Github repo
-- A Beanstalk configuration template named ``default``
+- An `S3 bucket`_ for storing `application versions <#application-version>`_
+- An `Beanstalk application`_ named after the Github repo
+- A `Beanstalk configuration template <#configuration-template>`_ named ``default``
 
 For each environment it will create:
 
-- A security group for the RDS instance named ``db-{app sha}-{environment name}``
-- An RDS instance named ``db-{app sha}-{environment name}``
-- A Beanstalk configuration template inheriting from ``default`` with the
+- A security group for the `RDS instance`_ named ``db-{app sha}-{environment name}``
+- An `RDS instance`_ named ``db-{app sha}-{environment name}``
+- A `Beanstalk configuration template <#configuration-template>`_ inheriting from ``default`` with the
   RDS database details.
-- A Beanstalk environment named ``{app sha}-{environment name}``
+- A `Beanstalk environment`_ named ``{app sha}-{environment name}``
 
 Environment variables can be added to the ``default`` configuration template from
 the current environment with the ``--proxy-env`` argument. In the example below the
 ``FOO`` and ``BAR`` environment variables will be taken from the current
-environment and added to the configuration template.::
+environment and added to the configuration template::
 
   dm-deploy bootstrap --proxy-env='FOO,BAR'
 
@@ -97,15 +97,15 @@ Beanstalk application
 `AWS documentation <http://docs.aws.amazon.com/general/latest/gr/glos-chap.html#application>`_
 
 Named the same as the Github application; it is derived from the git remote
-origin URL. Contains Beanstalk environments.
+origin URL. Contains `Beanstalk environments <#beanstalk-environment>`_.
 
 S3 bucket
 ~~~~~~~~~
 
 `AWS documentation <http://docs.aws.amazon.com/general/latest/gr/glos-chap.html#bucket>`_
 
-For each application there is an `S3 bucket`_ with the same name used for
-storing the `Application version`_ packages.
+For each application there is an S3 bucket with the same name as the application
+used for storing the `Application version`_ packages.
 
 .. note::
   This S3 bucket must be in the same `AWS region`_ as the Beanstalk application.
