@@ -31,24 +31,22 @@ def create_version(version_label, region=None):
     aws.get_client(region).create_version(version_label)
 
 
+@argh.arg('name', help='Name for the environment')
 @argh.arg('db_name', help='Database name')
 @argh.arg('db_username', help='Master database username')
 @argh.arg('db_password', help='Master database password')
-def deploy_to_branch_environment(db_name, db_username, db_password,
-                                 branch=None, region=None):
-    """Deploy the current HEAD to a temporary branch environment"""
-    if branch is None:
-        branch = git.get_current_branch()
-    aws.get_client(region).deploy_to_branch_environment(branch, db_name,
-                                                        db_username,
-                                                        db_password)
+def deploy_to_development_environment(name, db_name, db_username, db_password,
+                                      region=None):
+    """Deploy the current HEAD to a temporary development environment"""
+    aws.get_client(region).deploy_to_development_environment(name, db_name,
+                                                             db_username,
+                                                             db_password)
 
 
-def terminate_branch_environment(branch=None, region=None):
-    """Terminate a temporary branch environment"""
-    if branch is None:
-        branch = git.get_current_branch()
-    aws.get_client(region).terminate_branch_environment(branch)
+@argh.arg('name', help='Name for the environment')
+def terminate_development_environment(name, region=None):
+    """Terminate a temporary development environment"""
+    aws.get_client(region).terminate_development_environment(name)
 
 
 def deploy_latest_to_staging(region=None):
@@ -79,8 +77,8 @@ def main():
     parser.add_commands([
         bootstrap,
         create_version,
-        deploy_to_branch_environment,
-        terminate_branch_environment,
+        deploy_to_development_environment,
+        terminate_development_environment,
         deploy_latest_to_staging,
         deploy_staging_to_production,
         deploy_to_staging,

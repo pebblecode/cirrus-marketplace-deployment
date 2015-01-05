@@ -51,21 +51,21 @@ environment and added to the configuration template::
 
   dm-deploy bootstrap --proxy-env='FOO,BAR'
 
-Ephemeral environments
-~~~~~~~~~~~~~~~~~~~~~~
+Development environments
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create an ephemeral environment for a feature branch use the 
-``deploy-to-branch-environment`` command. This will create a development version,
-a development environment with that version and an associated RDS instance. If
-a branch is not explicitly provided then the current branch name will be used::
+To create a development environment (for a feature branch, for example) use the
+``deploy-to-development-environment`` command. This will create a development
+version, a development environment with that version and an associated RDS
+instance. A name for the development environment must be provided as the first
+argument::
 
-  dm-deploy deploy-to-branch-environment
+  dm-deploy deploy-to-development-environment my-feature db_name db_user db_password
 
-When the ephemeral environment is no longer needed it can be removed with
-the ``terminate-branch-environment`` command. If a branch is not explicitly
-provided then the current branch name will be used::
+When the development environment is no longer needed it can be removed with
+the ``terminate-development-environment`` command::
 
-  dm-deploy terminate-branch-environment
+  dm-deploy terminate-development-environment my-feature
 
 Deployment
 ~~~~~~~~~~
@@ -120,7 +120,7 @@ Beanstalk environments are named ``{app sha}-{environment short name}``.
 because environment names must be unique across all Beanstalk applications.
 ``{environment short name}`` is the environment name we use; for example
 ``staging`` or ``production`` for our permanent environments or ``dev-{label}``
-for ephemeral environments.
+for development environments.
 
 Each environment has it's own RDS instance associated with it, see
 `RDS instance`_.
@@ -165,7 +165,7 @@ application a version called ``initial`` is created all other versions are
 named as follows:
 
 - Release versions should be called ``release-{build number}``.
-- Ephemeral versions will be called ``dev-{label}-{short commit sha}``.
+- Development versions will be called ``dev-{label}-{short commit sha}``.
 
 .. note::
   Version names have a length limit of 100 characters.

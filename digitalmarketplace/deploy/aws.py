@@ -65,9 +65,9 @@ class Client(object):
             description)
         return version_label
 
-    def deploy_to_branch_environment(self, branch, db_name, db_username,
-                                     db_password):
-        environment_short_name = 'dev-{}'.format(branch)
+    def deploy_to_development_environment(self, name, db_name, db_username,
+                                          db_password):
+        environment_short_name = 'dev-{}'.format(name)
         environment_name = self._get_env_name(environment_short_name)
         version_label = self.create_version(
             environment_short_name, with_sha=True)
@@ -79,8 +79,8 @@ class Client(object):
             self.beanstalk.update_environment(environment_name,
                                               version_label)
 
-    def terminate_branch_environment(self, branch):
-        environment_short_name = 'dev-{}'.format(branch)
+    def terminate_development_environment(self, name):
+        environment_short_name = 'dev-{}'.format(name)
         environment_name = self._get_env_name(environment_short_name)
 
         self.beanstalk.terminate_environment(environment_name)
