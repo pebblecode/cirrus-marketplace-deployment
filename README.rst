@@ -33,7 +33,7 @@ If your project has not been set up in Beanstalk yet you will have to ``bootstra
 This will create:
 
 - An `S3 bucket`_ for storing `application versions <#application-version>`_
-- An `Beanstalk application`_ named after the Github repo
+- A `Beanstalk application`_ named after the Github repo
 - A `Beanstalk configuration template <#configuration-template>`_ named ``default``
 
 For each environment it will create:
