@@ -16,10 +16,14 @@ proxy_env_arg = argh.arg(
          "configuration template")
 
 
+@argh.arg('db_name', help='Database name')
+@argh.arg('db_username', help='Master database username')
+@argh.arg('db_password', help='Master database password')
 @proxy_env_arg
-def bootstrap(region=None, proxy_env=None):
+def bootstrap(db_name, db_username, db_password, proxy_env=None, region=None):
     """Create a new application with an S3 bucket and core environments"""
-    aws.get_client(region).bootstrap(proxy_env)
+    aws.get_client(region).bootstrap(proxy_env,
+                                     db_name, db_username, db_password)
 
 
 def create_version(version_label, region=None):
@@ -27,17 +31,17 @@ def create_version(version_label, region=None):
     aws.get_client(region).create_version(version_label)
 
 
-@proxy_env_arg
-def create_configuration(region=None, proxy_env=None):
-    """Create a new configuration template"""
-    aws.get_client(region).create_configuration(proxy_env)
-
-
-def deploy_to_branch_environment(branch=None, region=None):
+@argh.arg('db_name', help='Database name')
+@argh.arg('db_username', help='Master database username')
+@argh.arg('db_password', help='Master database password')
+def deploy_to_branch_environment(db_name, db_username, db_password,
+                                 branch=None, region=None):
     """Deploy the current HEAD to a temporary branch environment"""
     if branch is None:
         branch = git.get_current_branch()
-    aws.get_client(region).deploy_to_branch_environment(branch)
+    aws.get_client(region).deploy_to_branch_environment(branch, db_name,
+                                                        db_username,
+                                                        db_password)
 
 
 def terminate_branch_environment(branch=None, region=None):
@@ -74,7 +78,6 @@ def main():
     parser.add_argument('--region', default='eu-west-1')
     parser.add_commands([
         bootstrap,
-        create_configuration,
         create_version,
         deploy_to_branch_environment,
         terminate_branch_environment,
