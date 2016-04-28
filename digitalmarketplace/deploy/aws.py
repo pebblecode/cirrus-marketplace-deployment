@@ -13,7 +13,7 @@ from boto.exception import S3CreateError, BotoServerError
 from . import git
 
 
-DEFAULT_SOLUTION_STACK = '64bit Amazon Linux 2014.03 v1.0.9 running Python 2.7'
+DEFAULT_SOLUTION_STACK = '64bit Amazon Linux 2016.03 v2.1.0 running Python 2.7'
 DEFAULT_ENVIRONMENT_NAMES = ['staging', 'production']
 
 
