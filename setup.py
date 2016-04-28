@@ -27,6 +27,7 @@ if __name__ == '__main__':
         entry_points={
             'console_scripts': [
                 'dm-deploy=digitalmarketplace.deploy.cli:main',
+                'cirrus-deploy=digitalmarketplace.deploy.cli:main',
             ]
         }
     )
