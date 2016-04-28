@@ -16,7 +16,7 @@ if __name__ == '__main__':
         long_description=readme,
         author=deploy.__author__,
         author_email=deploy.__author_email__,
-        url='https://github.com/alphagov/digitalmarketplace-deploy',
+        url='https://github.com/pebblecode/cirrus-marketplace-deployment',
         licence='MIT',
 
         install_requires=[
