@@ -12,7 +12,7 @@ Installation
 
 Install with pip::
 
-  pip install git+https://github.com/alphagov/digitalmarketplace-deployment.git
+  pip install git+https://github.com/pebblecode/cirrus-marketplace-deployment.git
 
 ``dm-deploy`` uses `boto`_ under the hood. AWS credentials can be provided to
 boto in few different ways, check their `config tutorial`_ for more information.
