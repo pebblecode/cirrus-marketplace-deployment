@@ -8,7 +8,7 @@ with open('README.rst', 'r', 'utf-8') as f:
 
 if __name__ == '__main__':
     setup(
-        name='digitalmarketplace-deploy',
+        name='cirrus-marketplace-deploy',
         version=deploy.__version__,
         packages=find_packages(exclude=['app*']),
         namespace_packages=['digitalmarketplace'],
